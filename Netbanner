@@ -1,1 +1,205 @@
+# Configuring NetBanner on Windows 11 for multi-monitor enterprise deployments
 
+**NetBanner is actually a Microsoft product**  (not Telos Corporation) originally developed for the U.S. Air Force to display classification banners  in DoD/government environments.  Unfortunately, the software has **no documented multi-monitor configuration settings**, though several workarounds exist. This guide covers auto-start configuration, multi-monitor limitations, and practical solutions for handling dynamic display changes.
+
+## NetBanner installation and registry configuration fundamentals
+
+NetBanner installs to `C:\Program Files\Microsoft\NetBanner\`  and stores configuration in the registry at `HKLM\SOFTWARE\Policies\Microsoft\NetBanner`.  The application uses Windows Application Desktop Toolbar (AppBar) functionality and includes ADMX/ADML Group Policy templates for enterprise management.
+
+**Key registry values** control banner appearance:
+
+|Value Name           |Type  |Description                                                              |
+|---------------------|------|-------------------------------------------------------------------------|
+|Classification       |DWORD |1=Unclassified, 2=Secret, 3=TS/SCI                                       |
+|CustomSettings       |DWORD |Enable custom color/text                                                 |
+|CustomBackgroundColor|DWORD |1-9 (Green, Blue, Red, Yellow, White, Black, SaddleBrown, Purple, Orange)|
+|CustomForeColor      |DWORD |1=Black, 2=White, 3=Red                                                  |
+|CustomDisplayText    |String|Custom banner text                                                       |
+|Caveats              |String|Additional text (max 40 chars)                                           |
+
+The GPO path is `Computer Configuration > Administrative Templates > Control Panel > NetBanner`.  No documented command-line arguments exist for the executable.
+
+## Four methods for automatic startup at user login
+
+### Startup folder placement offers the simplest approach
+
+Place a shortcut in the all-users startup folder for machine-wide deployment:
+
+**User-specific:** `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`  
+**All users:** `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` 
+
+```powershell
+# PowerShell - Create shortcut for all users
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\NetBanner.lnk")
+$Shortcut.TargetPath = "C:\Program Files\Microsoft\NetBanner\NetBanner.exe"
+$Shortcut.Save()
+```
+
+### Registry Run keys enable silent deployment
+
+Add entries to HKLM for all users or HKCU for specific users:  
+
+```cmd
+:: All users (requires admin)
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /V "NetBanner" /t REG_SZ /F /D "C:\Program Files\Microsoft\NetBanner\NetBanner.exe"
+
+:: Current user only
+REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /V "NetBanner" /t REG_SZ /F /D "C:\Program Files\Microsoft\NetBanner\NetBanner.exe"
+```
+
+### Task Scheduler provides maximum control
+
+Create a logon-triggered task with elevated privileges:
+
+```powershell
+$action = New-ScheduledTaskAction -Execute "C:\Program Files\Microsoft\NetBanner\NetBanner.exe"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+Register-ScheduledTask -TaskName "NetBanner" -Action $action -Trigger $trigger -Principal $principal -Settings $settings
+```
+
+Alternatively via command line:
+
+```cmd
+schtasks /create /tn "NetBanner" /tr "C:\Program Files\Microsoft\NetBanner\NetBanner.exe" /sc onlogon /ru SYSTEM /rl HIGHEST
+```
+
+### Group Policy preferences work best for domain environments
+
+Navigate to `Computer Configuration > Preferences > Control Panel Settings > Scheduled Tasks`, create a new task with: 
+
+- **User Account:** NT AUTHORITY\SYSTEM
+- **Run with highest privileges:** Enabled
+- **Trigger:** At log on - Any user
+- **Action:** Start program pointing to NetBanner.exe
+
+For registry-based deployment via GPO, use `Computer Configuration > Preferences > Windows Settings > Registry` to create the Run key entry centrally. 
+
+## Multi-monitor support has significant limitations
+
+**NetBanner lacks configurable multi-monitor settings.** No registry values, GPO options, or command-line arguments exist to control behavior across extended displays. The application automatically detects monitors but provides no administrative controls for multi-monitor configuration.
+
+**Known issues include:**
+
+- Banner properly functions on primary monitor (windows stop at banner edge)
+- Secondary monitors may have overlapping title bars 
+- Version 3.1 has reported compatibility issues with Windows 10/11 multi-monitor setups 
+- No mechanism to force banner display on all monitors simultaneously
+
+**Workaround options:** Consider alternative classification banner tools with native multi-monitor support:
+
+- **SystemBanner** (open-source, GitHub: awawrzyniak10/SystemBanner) - designed specifically to address NetBanner’s multi-monitor issues with AppBars on each screen
+- **Cyber Intel Classification Banner (CICB)**  - commercial alternative supporting Windows/Linux with multi-monitor and STIG compliance
+
+## Handling dynamic monitor connect/disconnect events
+
+Since NetBanner doesn’t automatically refresh when displays change, use **Event ID 112** from `Microsoft-Windows-DeviceSetupManager/Admin` as a trigger to restart the application.
+
+### Create a restart script
+
+Save as `C:\Scripts\RestartNetBanner.ps1`:
+
+```powershell
+param([int]$DelaySeconds = 3)
+$LogFile = "C:\Logs\NetBannerRestart.log"
+$TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+try {
+    "$TimeStamp - Display change detected" | Add-Content $LogFile
+    
+    $netbanner = Get-Process -Name "NetBanner" -ErrorAction SilentlyContinue
+    if ($netbanner) {
+        Stop-Process -Id $netbanner.Id -Force
+        Start-Sleep -Seconds $DelaySeconds
+    }
+    
+    Start-Process "C:\Program Files\Microsoft\NetBanner\NetBanner.exe"
+    "$TimeStamp - NetBanner restarted" | Add-Content $LogFile
+}
+catch {
+    "$TimeStamp - ERROR: $($_.Exception.Message)" | Add-Content $LogFile
+}
+```
+
+### Configure event-triggered Task Scheduler task
+
+Create a task that fires when monitors connect/disconnect:
+
+```xml
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Triggers>
+    <EventTrigger>
+      <Enabled>true</Enabled>
+      <Subscription>
+        <QueryList>
+          <Query Id="0" Path="Microsoft-Windows-DeviceSetupManager/Admin">
+            <Select Path="Microsoft-Windows-DeviceSetupManager/Admin">
+              *[System[Provider[@Name='DeviceSetupManager'] and EventID=112]]
+            </Select>
+          </Query>
+        </QueryList>
+      </Subscription>
+    </EventTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>S-1-5-18</UserId>
+      <RunLevel>HighestAvailable</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+  </Settings>
+  <Actions>
+    <Exec>
+      <Command>powershell.exe</Command>
+      <Arguments>-ExecutionPolicy Bypass -File "C:\Scripts\RestartNetBanner.ps1"</Arguments>
+    </Exec>
+  </Actions>
+</Task>
+```
+
+Import with: `schtasks /create /tn "NetBanner Monitor Refresh" /xml "C:\Scripts\MonitorTask.xml"`
+
+### Alternative: Continuous PowerShell monitoring service
+
+For environments where event triggers prove unreliable, run a polling script:
+
+```powershell
+$lastMonitors = @()
+while ($true) {
+    Start-Sleep -Seconds 5
+    $currentMonitors = Get-CimInstance -ClassName Win32_PnPEntity | 
+                       Where-Object {$_.Service -eq 'monitor'} | 
+                       Select-Object -ExpandProperty PNPDeviceID
+    
+    if (Compare-Object -ReferenceObject $lastMonitors -DifferenceObject $currentMonitors -PassThru) {
+        Stop-Process -Name "NetBanner" -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+        Start-Process "C:\Program Files\Microsoft\NetBanner\NetBanner.exe"
+        $lastMonitors = $currentMonitors
+    }
+}
+```
+
+## Recommended enterprise deployment configuration
+
+For maximum reliability in domain environments, combine these approaches:
+
+1. **Primary startup:** GPO Preferences Scheduled Task with SYSTEM account and logon trigger
+1. **Monitor change handling:** Event-triggered task using DeviceSetupManager Event ID 112
+1. **Banner settings:** Centrally manage via ADMX templates at `\\domain\SYSVOL\domain\Policies\PolicyDefinitions\`
+
+|Event ID|Source            |Use Case                        |
+|--------|------------------|--------------------------------|
+|100     |DeviceSetupManager|Service started (early trigger) |
+|112     |DeviceSetupManager|Device serviced (most reliable) |
+|101     |DeviceSetupManager|Processing finished (delayed)   |
+
+## Conclusion
+
+NetBanner’s enterprise deployment requires workarounds due to its **lack of native multi-monitor configuration** and absence of dynamic display refresh capabilities. Task Scheduler with event triggers provides the most robust solution for handling monitor changes, while GPO preferences offer centralized management for large deployments. Organizations requiring true multi-monitor support should evaluate SystemBanner or commercial alternatives specifically designed for extended display environments. The combination of registry-based auto-start with Event ID 112-triggered restart scripts addresses most operational requirements on Windows 10 and 11.
