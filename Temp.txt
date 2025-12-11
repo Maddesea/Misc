@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment Procurement Request</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #f8fafc;
+        color: #1e293b;
+        line-height: 1.5;
+        padding: 40px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+        color: white;
+        padding: 32px 40px;
+    }
+
+    .header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .header .subtitle {
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .header-meta {
+        display: flex;
+        gap: 32px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .header-meta-item {
+        font-size: 0.85rem;
+    }
+
+    .header-meta-item .label {
+        color: #64748b;
+        margin-right: 6px;
+    }
+
+    .header-meta-item .value {
+        color: #e2e8f0;
+        font-weight: 600;
+    }
+
+    /* Main Table */
+    .table-container {
+        padding: 0;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    thead {
+        background: #f1f5f9;
+    }
+
+    th {
+        text-align: left;
+        padding: 14px 16px;
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    th.right {
+        text-align: right;
+    }
+
+    th.center {
+        text-align: center;
+    }
+
+    td {
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: top;
+    }
+
+    td.right {
+        text-align: right;
+    }
+
+    td.center {
+        text-align: center;
+    }
+
+    tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .line-num {
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .vendor-tag {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .vendor-fs {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .vendor-cdw {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .product-sku {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-family: 'SF Mono', 'Consolas', monospace;
+    }
+
+    .product-link {
+        font-size: 0.75rem;
+        color: #3b82f6;
+        text-decoration: none;
+    }
+
+    .product-link:hover {
+        text-decoration: underline;
+    }
+
+    .specs-cell {
+        font-size: 0.8rem;
+        color: #475569;
+        max-width: 320px;
+    }
+
+    .spec-line {
+        margin-bottom: 2px;
+    }
+
+    .spec-label {
+        color: #94a3b8;
+    }
+
+    .qty-cell {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .price-cell {
+        font-weight: 500;
+        color: #475569;
+        white-space: nowrap;
+    }
+
+    .total-cell {
+        font-weight: 700;
+        color: #059669;
+        white-space: nowrap;
+    }
+
+    /* Subtotal Rows */
+    .subtotal-row {
+        background: #f8fafc;
+    }
+
+    .subtotal-row td {
+        padding: 12px 16px;
+        font-weight: 600;
+        color: #475569;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Grand Total */
+    .grand-total-row {
+        background: #0f172a;
+    }
+
+    .grand-total-row td {
+        padding: 18px 16px;
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        border-bottom: none;
+    }
+
+    .grand-total-row .total-cell {
+        color: #4ade80;
+        font-size: 1.25rem;
+    }
+
+    /* Footer */
+    .footer {
+        padding: 24px 40px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .footer p {
+        margin-bottom: 4px;
+    }
+
+    /* Print Styles */
+    @media print {
+        body {
+            padding: 0;
+            background: white;
+        }
+        
+        .container {
+            box-shadow: none;
+        }
+
+        .header {
+            background: #1e3a5f !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .grand-total-row {
+            background: #0f172a !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        table {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 900px) {
+        body {
+            padding: 16px;
+        }
+
+        .header {
+            padding: 24px;
+        }
+
+        .header-meta {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+        }
+
+        .specs-cell {
+            min-width: 200px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Equipment Procurement Request</h1>
+            <p class="subtitle">AI Infrastructure & High-Speed Network Hardware</p>
+            <div class="header-meta">
+                <div class="header-meta-item">
+                    <span class="label">Date:</span>
+                    <span class="value">December 10, 2025</span>
+                </div>
+                <div class="header-meta-item">
+                    <span class="label">Total Items:</span>
+                    <span class="value">10 Units</span>
+                </div>
+                <div class="header-meta-item">
+                    <span class="label">Vendors:</span>
+                    <span class="value">FS.com, CDW</span>
+                </div>
+                <div class="header-meta-item">
+                    <span class="label">Total:</span>
+                    <span class="value">$30,119.00</span>
+                </div>
+            </div>
+        </header>
+
+```
+    <!-- Main Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40px;">#</th>
+                    <th style="width: 70px;">Vendor</th>
+                    <th style="width: 280px;">Product</th>
+                    <th>Key Specifications</th>
+                    <th class="center" style="width: 50px;">Qty</th>
+                    <th class="right" style="width: 100px;">Unit Price</th>
+                    <th class="right" style="width: 110px;">Line Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Item 1 -->
+                <tr>
+                    <td class="line-num">1</td>
+                    <td><span class="vendor-tag vendor-fs">FS.com</span></td>
+                    <td>
+                        <div class="product-name">N8510-24CD8D Data Center Switch</div>
+                        <div class="product-sku">SKU: 321549 | P/N: N8510-24CD8D</div>
+                        <a href="https://www.fs.com/products/321549.html?attribute=110676&id=4258515" target="_blank" class="product-link">View →</a>
+                    </td>
+                    <td class="specs-cell">
+                        <div class="spec-line"><span class="spec-label">Ports:</span> 24× 200G QSFP56 + 8× 400G QSFP-DD</div>
+                        <div class="spec-line"><span class="spec-label">Chip:</span> Broadcom Trident 4-X9</div>
+                        <div class="spec-line"><span class="spec-label">Capacity:</span> 8.0 Tbps / 5,330 Mpps</div>
+                        <div class="spec-line"><span class="spec-label">Features:</span> PicOS, MLAG, EVPN-VXLAN, RoCEv2</div>
+                        <div class="spec-line"><span class="spec-label">Form:</span> 1RU, Front-to-Back Airflow</div>
+                    </td>
+                    <td class="center qty-cell">1</td>
+                    <td class="right price-cell">$12,400.00</td>
+                    <td class="right total-cell">$12,400.00</td>
+                </tr>
+
+                <!-- Item 2 -->
+                <tr>
+                    <td class="line-num">2</td>
+                    <td><span class="vendor-tag vendor-fs">FS.com</span></td>
+                    <td>
+                        <div class="product-name">PicOS® Perpetual License (200G)</div>
+                        <div class="product-sku">SKU: 225783 | P/N: P-OS-200G-EE</div>
+                        <a href="https://www.fs.com/products/225783.html?now_cid=4226" target="_blank" class="product-link">View →</a>
+                    </td>
+                    <td class="specs-cell">
+                        <div class="spec-line"><span class="spec-label">Type:</span> Perpetual License (Per Device)</div>
+                        <div class="spec-line"><span class="spec-label">OS:</span> Debian Linux Based NOS</div>
+                        <div class="spec-line"><span class="spec-label">Layer:</span> L2/L3 Switching & Routing</div>
+                        <div class="spec-line"><span class="spec-label">Features:</span> MLAG, OpenFlow 1.4, ACL, VRRP</div>
+                        <div class="spec-line"><span class="spec-label">Automation:</span> Ansible, NETCONF, RESTCONF</div>
+                    </td>
+                    <td class="center qty-cell">1</td>
+                    <td class="right price-cell">$3,079.00</td>
+                    <td class="right total-cell">$3,079.00</td>
+                </tr>
+
+                <!-- Item 3 -->
+                <tr>
+                    <td class="line-num">3</td>
+                    <td><span class="vendor-tag vendor-fs">FS.com</span></td>
+                    <td>
+                        <div class="product-name">200G QSFP56 DAC Twinax Cable (3m)</div>
+                        <div class="product-sku">SKU: 89561 | P/N: QSFP-200G-PC03</div>
+                        <a href="https://www.fs.com/products/89561.html?attribute=25123&id=3721709" target="_blank" class="product-link">View →</a>
+                    </td>
+                    <td class="specs-cell">
+                        <div class="spec-line"><span class="spec-label">Type:</span> Passive Direct Attach Copper</div>
+                        <div class="spec-line"><span class="spec-label">Speed:</span> 200 Gbps</div>
+                        <div class="spec-line"><span class="spec-label">Connector:</span> QSFP56 to QSFP56</div>
+                        <div class="spec-line"><span class="spec-label">Length:</span> 3m (10ft) | 26 AWG</div>
+                        <div class="spec-line"><span class="spec-label">Power:</span> ≤0.03W | Lifetime Warranty</div>
+                    </td>
+                    <td class="center qty-cell">4</td>
+                    <td class="right price-cell">$161.00</td>
+                    <td class="right total-cell">$644.00</td>
+                </tr>
+
+                <!-- FS.com Subtotal -->
+                <tr class="subtotal-row">
+                    <td colspan="5"></td>
+                    <td class="right">FS.com Subtotal:</td>
+                    <td class="right" style="color: #0f172a;">$16,123.00</td>
+                </tr>
+
+                <!-- Item 4 -->
+                <tr>
+                    <td class="line-num">4</td>
+                    <td><span class="vendor-tag vendor-cdw">CDW</span></td>
+                    <td>
+                        <div class="product-name">ASUS Ascent GX10 AI Mini PC</div>
+                        <div class="product-sku">CDW #: 9002014</div>
+                        <a href="https://www.cdw.com/product/asus-ascent-gx10-ai-mini-pc-gb10-128-gb-ram-2t-ssd/9002014" target="_blank" class="product-link">View →</a>
+                    </td>
+                    <td class="specs-cell">
+                        <div class="spec-line"><span class="spec-label">CPU:</span> NVIDIA GB10 Grace Blackwell (20-core ARM)</div>
+                        <div class="spec-line"><span class="spec-label">GPU:</span> Blackwell w/ 5th Gen Tensor Cores</div>
+                        <div class="spec-line"><span class="spec-label">Memory:</span> 128GB LPDDR5x Unified</div>
+                        <div class="spec-line"><span class="spec-label">Storage:</span> 2TB NVMe PCIe 4.0 SSD</div>
+                        <div class="spec-line"><span class="spec-label">AI Perf:</span> 1 PetaFLOP (1,000 TOPS)</div>
+                        <div class="spec-line"><span class="spec-label">Network:</span> ConnectX-7, 10GbE, WiFi 7</div>
+                        <div class="spec-line"><span class="spec-label">Size:</span> 150×150×51mm | 1.48kg</div>
+                    </td>
+                    <td class="center qty-cell">4</td>
+                    <td class="right price-cell">$3,499.00</td>
+                    <td class="right total-cell">$13,996.00</td>
+                </tr>
+
+                <!-- CDW Subtotal -->
+                <tr class="subtotal-row">
+                    <td colspan="5"></td>
+                    <td class="right">CDW Subtotal:</td>
+                    <td class="right" style="color: #0f172a;">$13,996.00</td>
+                </tr>
+
+                <!-- Grand Total -->
+                <tr class="grand-total-row">
+                    <td colspan="5"></td>
+                    <td class="right">GRAND TOTAL:</td>
+                    <td class="right total-cell">$30,119.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><strong>Notes:</strong> Prices shown are as quoted and subject to change. Tax and shipping not included.</p>
+        <p>Document generated: December 10, 2025</p>
+    </footer>
+</div>
+
+</body>
+</html>
